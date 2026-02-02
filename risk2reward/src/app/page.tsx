@@ -1,6 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import useCookie from "../util/cookies";
+
+type schoolClass = {
+  name: string,
+  grade: number,
+  difficulty: number,
+  tests: number,
+  days: number,
+}
 
 export default function Home() {
   const [className, setClassName] = useState<string>("");
@@ -12,8 +21,8 @@ export default function Home() {
   const [deleteMode, setDeleteMode] = useState<boolean>(false);
   const [calculateMode, setCalculateMode] = useState<boolean>(false);
 
-  const [classes, setClasses] = useState<any[]>([]);
-  const [risks, setRisks] = useState<(number | undefined)[]>([]); 
+  const [classes, setClasses] = useCookie<schoolClass[]>("classes", []);
+  const [risks, setRisks] = useState<number[]>([]);
 
   function gradeColor(grade: number) {
     if (grade >= 90) return "bg-green-500 text-white";
@@ -75,7 +84,6 @@ export default function Home() {
             days: daysUntilNextTest ? parseInt(daysUntilNextTest) : 0,
           };
           setClasses([...classes, newClass]);
-          setRisks([...risks, undefined]);
           setClassName("");
           setGrade("");
           setClassDifficulty("");
@@ -125,7 +133,7 @@ export default function Home() {
         />
         <button
           type="submit"
-          className="bg-emerald-600 rounded-2xl p-2 active:scale-95 text-white font-bold"
+          className="bg-emerald-600 rounded-2xl p-2 active:scale-95 text-white font-bold cursor-pointer"
         >
           Add Class
         </button>
@@ -134,23 +142,25 @@ export default function Home() {
       <div>
         <h2 className="text-xl font-semibold">Your Classes</h2>
         <ul className="space-y-2">
-          {classes.map((c, index) => (
+          {classes && classes.map((c, index) => (
             <li
               key={index}
               onClick={() => handleClassClick(index)}
-              className={`flex flex-col md:flex-row bg-white shadow p-2 rounded-2xl gap-2 justify-start items-center cursor-pointer hover:bg-gray-100`}
+              className={`flex flex-col md:flex-row bg-white shadow p-2 rounded-2xl gap-2 justify-between items-center cursor-pointer pr-6 ${deleteMode ? "hover:bg-red-100" : "hover:bg-gray-100"}`}
             >
-              <div
-                className={`leading-none p-4 text-lg ${gradeColor(c.grade)} rounded-xl min-w-[60px] text-center`}
-              >
-                {c.grade}
-              </div>
-              <div className="text-lg font-medium text-black">{c.name}</div>
-              <div className="text-sm text-black">
-                Difficulty: {c.difficulty} | Tests Left: {c.tests} | Days Until Next Test: {c.days}
+              <div className="flex flex-col md:flex-row items-center gap-2">
+                <div
+                  className={`leading-none p-4 text-lg ${gradeColor(c.grade)} rounded-xl min-w-[60px] text-center`}
+                >
+                  {c.grade}
+                </div>
+                <div className="text-lg font-medium text-black">{c.name}</div>
+                <div className="text-sm text-black">
+                  Difficulty: {c.difficulty} | Tests Left: {c.tests} | Days Until Next Test: {c.days}
+                </div>
               </div>
               {risks[index] !== undefined && (
-                <div className="text-sm font-semibold text-red-700 ml-4">
+                <div className="text-sm font-semibold text-red-700">
                   Risk: {risks[index]?.toFixed(2)}
                 </div>
               )}
