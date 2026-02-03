@@ -10,7 +10,6 @@ type schoolClass = {
   tests: number,
   days: number,
 }
-
 export default function Home() {
   const [className, setClassName] = useState<string>("");
   const [grade, setGrade] = useState<string>("");
@@ -20,10 +19,9 @@ export default function Home() {
 
   const [deleteMode, setDeleteMode] = useState<boolean>(false);
   const [calculateMode, setCalculateMode] = useState<boolean>(false);
-
+  
   const [classes, setClasses] = useCookie<schoolClass[]>("classes", []);
   const [risks, setRisks] = useState<number[]>([]);
-
   function gradeColor(grade: number) {
     if (grade >= 90) return "bg-green-500 text-white";
     if (grade >= 80 && grade <= 89.49) return "bg-blue-500 text-white";
@@ -37,6 +35,9 @@ export default function Home() {
     daysUntilNextTest: number,
     grade: number
   ) {
+    if ((classDifficulty * numTests) / (daysUntilNextTest + 1) - grade / 100 <= 0) {
+      return 0; // Prevents negative risk from being shown
+    }
     return (classDifficulty * numTests) / (daysUntilNextTest + 1) - grade / 100;
   }
 
@@ -133,7 +134,7 @@ export default function Home() {
         />
         <button
           type="submit"
-          className="bg-emerald-600 rounded-2xl p-2 active:scale-95 text-white font-bold cursor-pointer"
+          className="bg-emerald-600 rounded-2xl p-2 active:scale-95 text-white font-bold"
         >
           Add Class
         </button>
@@ -142,25 +143,23 @@ export default function Home() {
       <div>
         <h2 className="text-xl font-semibold">Your Classes</h2>
         <ul className="space-y-2">
-          {classes && classes.map((c, index) => (
+          {classes.map((c, index) => (
             <li
               key={index}
               onClick={() => handleClassClick(index)}
-              className={`flex flex-col md:flex-row bg-white shadow p-2 rounded-2xl gap-2 justify-between items-center cursor-pointer pr-6 ${deleteMode ? "hover:bg-red-100" : "hover:bg-gray-100"}`}
+              className={`flex flex-col md:flex-row bg-white shadow p-2 rounded-2xl gap-2 justify-start items-center cursor-pointer hover:bg-gray-100`}
             >
-              <div className="flex flex-col md:flex-row items-center gap-2">
-                <div
-                  className={`leading-none p-4 text-lg ${gradeColor(c.grade)} rounded-xl min-w-[60px] text-center`}
-                >
-                  {c.grade}
-                </div>
-                <div className="text-lg font-medium text-black">{c.name}</div>
-                <div className="text-sm text-black">
-                  Difficulty: {c.difficulty} | Tests Left: {c.tests} | Days Until Next Test: {c.days}
-                </div>
+              <div
+                className={`leading-none p-4 text-lg ${gradeColor(c.grade)} rounded-xl min-w-[60px] text-center`}
+              >
+                {c.grade.toFixed(2)}
+              </div>
+              <div className="text-lg font-medium text-black">{c.name}</div>
+              <div className="text-sm text-black">
+                Difficulty: {c.difficulty} | Tests Left: {c.tests} | Days Until Next Test: {c.days}
               </div>
               {risks[index] !== undefined && (
-                <div className="text-sm font-semibold text-red-700">
+                <div className="text-sm font-semibold text-red-700 ml-4">
                   Risk: {risks[index]?.toFixed(2)}
                 </div>
               )}
